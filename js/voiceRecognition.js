@@ -4,7 +4,13 @@
  * 使用浏览器内置的SpeechRecognition API
  */
 
-export class VoiceRecognition {
+// 确保全局命名空间存在
+window.PetTranslator = window.PetTranslator || {};
+
+/**
+ * 语音识别类
+ */
+PetTranslator.VoiceRecognition = class {
     constructor() {
         this.recognition = null;
         this.isListening = false;
@@ -143,7 +149,6 @@ export class VoiceRecognition {
 
     /**
      * 设置结果回调
-     * @param {Function} callback - 回调函数，参数为识别结果对象 {text: string, confidence: number}
      */
     onResult(callback) {
         this.onResultCallback = callback;
@@ -151,7 +156,6 @@ export class VoiceRecognition {
 
     /**
      * 设置状态变化回调
-     * @param {Function} callback - 回调函数，参数为状态信息
      */
     onStatusChange(callback) {
         this.onStatusChangeCallback = callback;
@@ -159,7 +163,6 @@ export class VoiceRecognition {
 
     /**
      * 设置错误回调
-     * @param {Function} callback - 回调函数，参数为错误信息
      */
     onError(callback) {
         this.onErrorCallback = callback;
@@ -167,7 +170,6 @@ export class VoiceRecognition {
 
     /**
      * 更新状态
-     * @param {string} message - 状态消息
      */
     updateStatus(message) {
         if (this.onStatusChangeCallback) {
@@ -177,7 +179,6 @@ export class VoiceRecognition {
 
     /**
      * 检查是否正在监听
-     * @returns {boolean}
      */
     getIsListening() {
         return this.isListening;
@@ -185,11 +186,8 @@ export class VoiceRecognition {
 
     /**
      * 检查浏览器是否支持语音识别
-     * @returns {boolean}
      */
     isSupported() {
         return this.recognition !== null;
     }
-}
-
-export default VoiceRecognition;
+};

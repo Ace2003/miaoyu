@@ -3,9 +3,11 @@
  * 负责分析宠物声音并翻译成人类语言
  */
 
+// 确保全局命名空间存在
+window.PetTranslator = window.PetTranslator || {};
+
 // 猫咪声音数据库
 const catSounds = {
-    // 基础叫声
     "meow": {
         translations: [
             "嘿，看看我！",
@@ -46,8 +48,6 @@ const catSounds = {
         confidence: 0.8,
         context: "表达需求或情感"
     },
-    
-    // 呼噜声
     "purr": {
         translations: [
             "我现在感觉非常舒服和放松！",
@@ -78,8 +78,6 @@ const catSounds = {
         confidence: 0.9,
         context: "表达满足和舒适"
     },
-    
-    // 嘶嘶声
     "hiss": {
         translations: [
             "我现在感到害怕，请不要靠近我！",
@@ -110,8 +108,6 @@ const catSounds = {
         confidence: 0.88,
         context: "表达恐惧或防御"
     },
-    
-    // 咕噜声
     "growl": {
         translations: [
             "我现在很生气，请不要挑战我！",
@@ -142,8 +138,6 @@ const catSounds = {
         confidence: 0.85,
         context: "表达愤怒或警告"
     },
-    
-    // 尖叫声
     "yowl": {
         translations: [
             "我现在非常痛苦，需要帮助！",
@@ -174,8 +168,6 @@ const catSounds = {
         confidence: 0.87,
         context: "表达极度痛苦或不安"
     },
-    
-    // 颤音/啁啾
     "trill": {
         translations: [
             "你好啊，很高兴见到你！",
@@ -210,7 +202,6 @@ const catSounds = {
 
 // 狗狗声音数据库
 const dogSounds = {
-    // 吠叫
     "bark": {
         translations: [
             "嘿，注意到我了吗？",
@@ -251,8 +242,6 @@ const dogSounds = {
         confidence: 0.82,
         context: "表达兴奋或提醒"
     },
-    
-    // 低沉吠叫
     "deep bark": {
         translations: [
             "我感觉有点威胁，小心点。",
@@ -283,8 +272,6 @@ const dogSounds = {
         confidence: 0.88,
         context: "防御性警告"
     },
-    
-    // 呜咽
     "whimper": {
         translations: [
             "我有点害怕，能安慰我吗？",
@@ -315,8 +302,6 @@ const dogSounds = {
         confidence: 0.85,
         context: "表达不安或渴望"
     },
-    
-    // 嗥叫
     "howl": {
         translations: [
             "我在这里！能听到我吗？",
@@ -347,8 +332,6 @@ const dogSounds = {
         confidence: 0.8,
         context: "表达孤独或交流"
     },
-    
-    // 咆哮
     "growl": {
         translations: [
             "我现在很生气，请不要挑战我！",
@@ -379,8 +362,6 @@ const dogSounds = {
         confidence: 0.88,
         context: "表达愤怒或警告"
     },
-    
-    // 喘气
     "panting": {
         translations: [
             "我太热了，需要凉快一下。",
@@ -411,8 +392,6 @@ const dogSounds = {
         confidence: 0.82,
         context: "调节体温或表达情绪"
     },
-    
-    // 哀号
     "whine": {
         translations: [
             "我想要那个，能给我吗？",
@@ -445,36 +424,13 @@ const dogSounds = {
     }
 };
 
-// 情绪分析关键词
-const emotionKeywords = {
-    // 积极情绪
-    positive: [
-        "开心", "快乐", "高兴", "兴奋", "满足", "舒适", "放松",
-        "喜欢", "爱", "友好", "热情", "积极", "愉快", "幸福"
-    ],
-    
-    // 消极情绪
-    negative: [
-        "害怕", "恐惧", "生气", "愤怒", "焦虑", "不安", "紧张",
-        "痛苦", "难过", "悲伤", "沮丧", "恐惧", "担心", "害怕"
-    ],
-    
-    // 需求相关
-    needs: [
-        "饿", "渴", "吃", "喝", "玩", "出去", "散步", "陪伴",
-        "关注", "帮助", "不舒服", "疼痛", "需要", "想要"
-    ]
-};
-
 /**
  * 语义分析器类
- * 负责分析输入文本并翻译为人类语言
  */
-export class SemanticAnalyzer {
+PetTranslator.SemanticAnalyzer = class {
     constructor() {
         this.catSounds = catSounds;
         this.dogSounds = dogSounds;
-        this.emotionKeywords = emotionKeywords;
     }
 
     /**
@@ -494,18 +450,14 @@ export class SemanticAnalyzer {
         const lowerInput = input.toLowerCase();
         const trimmedInput = lowerInput.trim();
         
-        // 选择对应的声音数据库
         const soundDatabase = mode === 'cat' ? this.catSounds : this.dogSounds;
         const animalName = mode === 'cat' ? '猫咪' : '狗狗';
         
-        // 查找匹配的声音
         let bestMatch = null;
         let highestConfidence = 0;
         
         for (const [soundKey, soundData] of Object.entries(soundDatabase)) {
-            // 检查是否包含关键词
             if (lowerInput.includes(soundKey) || trimmedInput.includes(soundKey)) {
-                // 精确匹配的话，置信度更高
                 const exactMatch = trimmedInput === soundKey || lowerInput === soundKey;
                 const confidence = exactMatch ? Math.min(soundData.confidence + 0.05, 0.98) : soundData.confidence;
                 
@@ -520,44 +472,7 @@ export class SemanticAnalyzer {
             }
         }
         
-        // 如果没有找到精确匹配，尝试模糊匹配
         if (!bestMatch) {
-            // 分析情绪和需求
-            const emotionAnalysis = this.analyzeEmotion(lowerInput);
-            const needsAnalysis = this.analyzeNeeds(lowerInput);
-            
-            // 根据情绪和需求生成翻译
-            if (emotionAnalysis || needsAnalysis) {
-                const contextParts = [];
-                const translationParts = [];
-                
-                if (emotionAnalysis.positive) {
-                    contextParts.push('积极情绪');
-                    translationParts.push(`你的${animalName}现在感觉很好，很放松！`);
-                }
-                
-                if (emotionAnalysis.negative) {
-                    contextParts.push('消极情绪');
-                    translationParts.push(`你的${animalName}可能感到不安或害怕，请给予安慰。`);
-                }
-                
-                if (needsAnalysis) {
-                    contextParts.push('有需求');
-                    translationParts.push(`你的${animalName}可能有某种需求，需要你的关注。`);
-                }
-                
-                return {
-                    success: true,
-                    input: input,
-                    mode: mode,
-                    translations: translationParts,
-                    confidence: 0.6,
-                    context: contextParts.join('，'),
-                    isFuzzyMatch: true
-                };
-            }
-            
-            // 如果连模糊匹配都没有，返回默认翻译
             return {
                 success: true,
                 input: input,
@@ -574,15 +489,8 @@ export class SemanticAnalyzer {
             };
         }
         
-        // 选择一个随机的翻译
         const translations = bestMatch.data.translations;
         const randomTranslation = translations[Math.floor(Math.random() * translations.length)];
-        
-        // 分析额外的情绪和需求
-        const additionalAnalysis = {
-            emotion: this.analyzeEmotion(lowerInput),
-            needs: this.analyzeNeeds(lowerInput)
-        };
         
         return {
             success: true,
@@ -591,55 +499,8 @@ export class SemanticAnalyzer {
             soundType: bestMatch.sound,
             translations: [randomTranslation, ...translations.filter(t => t !== randomTranslation).slice(0, 1)],
             confidence: bestMatch.confidence,
-            context: bestMatch.data.context,
-            additionalAnalysis: additionalAnalysis
+            context: bestMatch.data.context
         };
-    }
-
-    /**
-     * 分析情绪
-     * @param {string} text - 输入文本
-     * @returns {object} 情绪分析结果
-     */
-    analyzeEmotion(text) {
-        const result = {
-            positive: false,
-            negative: false,
-            keywords: []
-        };
-        
-        for (const keyword of this.emotionKeywords.positive) {
-            if (text.includes(keyword)) {
-                result.positive = true;
-                result.keywords.push(keyword);
-            }
-        }
-        
-        for (const keyword of this.emotionKeywords.negative) {
-            if (text.includes(keyword)) {
-                result.negative = true;
-                result.keywords.push(keyword);
-            }
-        }
-        
-        return result;
-    }
-
-    /**
-     * 分析需求
-     * @param {string} text - 输入文本
-     * @returns {boolean|array} 如果有需求，返回识别到的需求关键词
-     */
-    analyzeNeeds(text) {
-        const foundNeeds = [];
-        
-        for (const keyword of this.emotionKeywords.needs) {
-            if (text.includes(keyword)) {
-                foundNeeds.push(keyword);
-            }
-        }
-        
-        return foundNeeds.length > 0 ? foundNeeds : null;
     }
 
     /**
@@ -653,7 +514,6 @@ export class SemanticAnalyzer {
         }
         
         const animalName = analysisResult.mode === 'cat' ? '猫咪' : '狗狗';
-        const confidencePercent = Math.round(analysisResult.confidence * 100);
         
         let formatted = '';
         
@@ -673,6 +533,4 @@ export class SemanticAnalyzer {
         
         return formatted;
     }
-}
-
-export default SemanticAnalyzer;
+};

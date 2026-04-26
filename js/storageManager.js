@@ -3,6 +3,9 @@
  * 负责使用浏览器localStorage存储和管理翻译历史记录
  */
 
+// 创建全局命名空间
+window.PetTranslator = window.PetTranslator || {};
+
 // 存储键名
 const STORAGE_KEYS = {
     HISTORY: 'pet_translator_history',
@@ -13,21 +16,9 @@ const STORAGE_KEYS = {
 const MAX_HISTORY_ITEMS = 100;
 
 /**
- * 历史记录项结构
- * @typedef {Object} HistoryItem
- * @property {string} id - 唯一标识符
- * @property {string} input - 原始输入文本
- * @property {string} mode - 翻译模式 ('cat' 或 'dog')
- * @property {string} inputType - 输入类型 ('voice' 或 'text')
- * @property {Object} translationResult - 翻译结果对象
- * @property {number} timestamp - 时间戳
- * @property {Date} date - 日期对象
- */
-
-/**
  * 本地存储管理器类
  */
-export class StorageManager {
+PetTranslator.StorageManager = class {
     constructor() {
         this.storageAvailable = this.checkStorageAvailable();
         this.init();
@@ -76,11 +67,7 @@ export class StorageManager {
     /**
      * 添加历史记录
      * @param {Object} data - 历史记录数据
-     * @param {string} data.input - 原始输入文本
-     * @param {string} data.mode - 翻译模式 ('cat' 或 'dog')
-     * @param {string} data.inputType - 输入类型 ('voice' 或 'text')
-     * @param {Object} data.translationResult - 翻译结果对象
-     * @returns {HistoryItem|null} 添加的历史记录项，如果失败则返回null
+     * @returns {Object|null} 添加的历史记录项
      */
     addHistory(data) {
         if (!this.storageAvailable) {
@@ -126,7 +113,7 @@ export class StorageManager {
 
     /**
      * 获取所有历史记录
-     * @returns {HistoryItem[]} 历史记录数组
+     * @returns {Array} 历史记录数组
      */
     getHistory() {
         if (!this.storageAvailable) {
@@ -143,29 +130,9 @@ export class StorageManager {
     }
 
     /**
-     * 根据模式过滤历史记录
-     * @param {string} mode - 翻译模式 ('cat' 或 'dog')
-     * @returns {HistoryItem[]} 过滤后的历史记录数组
-     */
-    getHistoryByMode(mode) {
-        const history = this.getHistory();
-        return history.filter(item => item.mode === mode);
-    }
-
-    /**
-     * 根据输入类型过滤历史记录
-     * @param {string} inputType - 输入类型 ('voice' 或 'text')
-     * @returns {HistoryItem[]} 过滤后的历史记录数组
-     */
-    getHistoryByInputType(inputType) {
-        const history = this.getHistory();
-        return history.filter(item => item.inputType === inputType);
-    }
-
-    /**
      * 根据ID获取历史记录项
      * @param {string} id - 历史记录项ID
-     * @returns {HistoryItem|null} 历史记录项，如果不存在则返回null
+     * @returns {Object|null}
      */
     getHistoryById(id) {
         const history = this.getHistory();
@@ -175,7 +142,7 @@ export class StorageManager {
     /**
      * 删除指定的历史记录项
      * @param {string} id - 历史记录项ID
-     * @returns {boolean} 是否成功删除
+     * @returns {boolean}
      */
     deleteHistory(id) {
         if (!this.storageAvailable) {
@@ -203,7 +170,7 @@ export class StorageManager {
 
     /**
      * 清空所有历史记录
-     * @returns {boolean} 是否成功清空
+     * @returns {boolean}
      */
     clearHistory() {
         if (!this.storageAvailable) {
@@ -221,7 +188,7 @@ export class StorageManager {
 
     /**
      * 获取设置
-     * @returns {Object} 设置对象
+     * @returns {Object}
      */
     getSettings() {
         if (!this.storageAvailable) {
@@ -251,8 +218,8 @@ export class StorageManager {
 
     /**
      * 更新设置
-     * @param {Object} newSettings - 新的设置对象
-     * @returns {boolean} 是否成功更新
+     * @param {Object} newSettings
+     * @returns {boolean}
      */
     updateSettings(newSettings) {
         if (!this.storageAvailable) {
@@ -274,7 +241,7 @@ export class StorageManager {
 
     /**
      * 生成唯一ID
-     * @returns {string} 唯一标识符
+     * @returns {string}
      */
     generateId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -282,8 +249,8 @@ export class StorageManager {
 
     /**
      * 格式化日期显示
-     * @param {string|number} dateStringOrTimestamp - 日期字符串或时间戳
-     * @returns {string} 格式化的日期字符串
+     * @param {string|number} dateStringOrTimestamp
+     * @returns {string}
      */
     formatDate(dateStringOrTimestamp) {
         const date = new Date(dateStringOrTimestamp);
@@ -321,27 +288,4 @@ export class StorageManager {
     isStorageAvailable() {
         return this.storageAvailable;
     }
-
-    /**
-     * 获取历史记录统计信息
-     * @returns {Object} 统计信息对象
-     */
-    getStatistics() {
-        const history = this.getHistory();
-        
-        const catCount = history.filter(item => item.mode === 'cat').length;
-        const dogCount = history.filter(item => item.mode === 'dog').length;
-        const voiceCount = history.filter(item => item.inputType === 'voice').length;
-        const textCount = history.filter(item => item.inputType === 'text').length;
-        
-        return {
-            total: history.length,
-            cat: catCount,
-            dog: dogCount,
-            voice: voiceCount,
-            text: textCount
-        };
-    }
-}
-
-export default StorageManager;
+};

@@ -3,22 +3,21 @@
  * 整合所有功能模块，处理用户界面交互
  */
 
-import { VoiceRecognition } from './voiceRecognition.js';
-import { SemanticAnalyzer } from './semanticAnalyzer.js';
-import { StorageManager } from './storageManager.js';
+// 确保全局命名空间存在
+window.PetTranslator = window.PetTranslator || {};
 
 /**
  * 宠物翻译器应用类
  */
-class PetTranslatorApp {
+PetTranslator.App = class {
     constructor() {
-        this.currentMode = 'cat'; // 默认猫咪模式
-        this.currentInputType = 'voice'; // 默认语音输入
+        this.currentMode = 'cat';
+        this.currentInputType = 'voice';
         
         // 初始化各模块
-        this.voiceRecognition = new VoiceRecognition();
-        this.semanticAnalyzer = new SemanticAnalyzer();
-        this.storageManager = new StorageManager();
+        this.voiceRecognition = new PetTranslator.VoiceRecognition();
+        this.semanticAnalyzer = new PetTranslator.SemanticAnalyzer();
+        this.storageManager = new PetTranslator.StorageManager();
         
         // DOM元素引用
         this.elements = {};
@@ -75,39 +74,61 @@ class PetTranslatorApp {
      * 绑定事件监听器
      */
     bindEventListeners() {
+        var self = this;
+        
         // 模式切换
-        this.elements.catModeBtn.addEventListener('click', () => this.setMode('cat'));
-        this.elements.dogModeBtn.addEventListener('click', () => this.setMode('dog'));
+        this.elements.catModeBtn.addEventListener('click', function() {
+            self.setMode('cat');
+        });
+        this.elements.dogModeBtn.addEventListener('click', function() {
+            self.setMode('dog');
+        });
         
         // 输入类型切换
-        this.elements.voiceInputBtn.addEventListener('click', () => this.setInputType('voice'));
-        this.elements.textInputBtn.addEventListener('click', () => this.setInputType('text'));
+        this.elements.voiceInputBtn.addEventListener('click', function() {
+            self.setInputType('voice');
+        });
+        this.elements.textInputBtn.addEventListener('click', function() {
+            self.setInputType('text');
+        });
         
         // 语音识别控制
-        this.elements.startVoiceBtn.addEventListener('click', () => this.toggleVoiceRecognition());
+        this.elements.startVoiceBtn.addEventListener('click', function() {
+            self.toggleVoiceRecognition();
+        });
         
         // 文本翻译
-        this.elements.translateTextBtn.addEventListener('click', () => this.translateText());
-        this.elements.textInput.addEventListener('keypress', (e) => {
+        this.elements.translateTextBtn.addEventListener('click', function() {
+            self.translateText();
+        });
+        this.elements.textInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && e.ctrlKey) {
-                this.translateText();
+                self.translateText();
             }
         });
         
         // 历史记录操作
-        this.elements.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
+        this.elements.clearHistoryBtn.addEventListener('click', function() {
+            self.clearHistory();
+        });
         
         // 语音识别回调
-        this.voiceRecognition.onResult((result) => this.handleVoiceResult(result));
-        this.voiceRecognition.onStatusChange((status) => this.updateVoiceStatus(status));
-        this.voiceRecognition.onError((error) => this.handleVoiceError(error));
+        this.voiceRecognition.onResult(function(result) {
+            self.handleVoiceResult(result);
+        });
+        this.voiceRecognition.onStatusChange(function(status) {
+            self.updateVoiceStatus(status);
+        });
+        this.voiceRecognition.onError(function(error) {
+            self.handleVoiceError(error);
+        });
     }
 
     /**
      * 加载设置
      */
     loadSettings() {
-        const settings = this.storageManager.getSettings();
+        var settings = this.storageManager.getSettings();
         
         if (settings.defaultMode) {
             this.setMode(settings.defaultMode);
@@ -127,7 +148,6 @@ class PetTranslatorApp {
 
     /**
      * 设置翻译模式
-     * @param {string} mode - 模式 ('cat' 或 'dog')
      */
     setMode(mode) {
         if (mode !== 'cat' && mode !== 'dog') return;
@@ -144,7 +164,6 @@ class PetTranslatorApp {
 
     /**
      * 设置输入类型
-     * @param {string} type - 输入类型 ('voice' 或 'text')
      */
     setInputType(type) {
         if (type !== 'voice' && type !== 'text') return;
@@ -177,7 +196,7 @@ class PetTranslatorApp {
      * 启动语音识别
      */
     startVoiceRecognition() {
-        const started = this.voiceRecognition.start();
+        var started = this.voiceRecognition.start();
         
         if (started) {
             // 更新UI状态
@@ -201,7 +220,6 @@ class PetTranslatorApp {
 
     /**
      * 处理语音识别结果
-     * @param {Object} result - 识别结果对象
      */
     handleVoiceResult(result) {
         console.log('语音识别结果:', result);
@@ -212,7 +230,7 @@ class PetTranslatorApp {
         // 如果有识别结果，进行翻译
         if (result.text && result.text.trim()) {
             // 显示识别到的文本
-            this.elements.voiceStatus.textContent = `识别到: "${result.text}" (置信度: ${Math.round(result.confidence * 100)}%)`;
+            this.elements.voiceStatus.textContent = '识别到: "' + result.text + '" (置信度: ' + Math.round(result.confidence * 100) + '%)';
             
             // 执行翻译
             this.translate(result.text, 'voice');
@@ -223,7 +241,6 @@ class PetTranslatorApp {
 
     /**
      * 更新语音状态
-     * @param {string} status - 状态消息
      */
     updateVoiceStatus(status) {
         if (this.elements.voiceStatus) {
@@ -233,7 +250,6 @@ class PetTranslatorApp {
 
     /**
      * 处理语音识别错误
-     * @param {string} error - 错误信息
      */
     handleVoiceError(error) {
         console.error('语音识别错误:', error);
@@ -242,14 +258,14 @@ class PetTranslatorApp {
         this.stopVoiceRecognition();
         
         // 显示错误信息
-        this.elements.voiceStatus.textContent = `错误: ${error}`;
+        this.elements.voiceStatus.textContent = '错误: ' + error;
     }
 
     /**
      * 翻译文本输入
      */
     translateText() {
-        const text = this.elements.textInput.value.trim();
+        var text = this.elements.textInput.value.trim();
         
         if (!text) {
             this.showError('请输入您的宠物声音描述');
@@ -261,21 +277,19 @@ class PetTranslatorApp {
 
     /**
      * 执行翻译
-     * @param {string} input - 输入文本
-     * @param {string} inputType - 输入类型 ('voice' 或 'text')
      */
     translate(input, inputType) {
-        console.log(`翻译输入: ${input}, 模式: ${this.currentMode}, 输入类型: ${inputType}`);
+        console.log('翻译输入: ' + input + ', 模式: ' + this.currentMode + ', 输入类型: ' + inputType);
         
         // 执行语义分析
-        const analysisResult = this.semanticAnalyzer.analyze(input, this.currentMode);
+        var analysisResult = this.semanticAnalyzer.analyze(input, this.currentMode);
         
         // 显示结果
         this.displayTranslationResult(analysisResult);
         
         // 保存到历史记录
         if (analysisResult.success) {
-            const historyItem = this.storageManager.addHistory({
+            var historyItem = this.storageManager.addHistory({
                 input: input,
                 mode: this.currentMode,
                 inputType: inputType,
@@ -290,101 +304,86 @@ class PetTranslatorApp {
 
     /**
      * 显示翻译结果
-     * @param {Object} result - 分析结果对象
      */
     displayTranslationResult(result) {
         if (!result.success) {
-            this.elements.translationResult.innerHTML = `
-                <div class="error-message">
-                    <p>❌ 翻译失败</p>
-                    <p class="error-details">${result.error}</p>
-                </div>
-            `;
+            this.elements.translationResult.innerHTML = 
+                '<div class="error-message">' +
+                    '<p>❌ 翻译失败</p>' +
+                    '<p class="error-details">' + result.error + '</p>' +
+                '</div>';
             return;
         }
         
-        const animalEmoji = result.mode === 'cat' ? '🐱' : '🐶';
-        const confidencePercent = Math.round(result.confidence * 100);
+        var animalEmoji = result.mode === 'cat' ? '🐱' : '🐶';
+        var confidencePercent = Math.round(result.confidence * 100);
         
-        let resultHTML = `
-            <div class="translation-success">
-                <div class="translation-header">
-                    <span class="animal-emoji">${animalEmoji}</span>
-                    <span class="translation-title">翻译结果</span>
-                </div>
-                <div class="translation-main">
-                    <p class="translation-text">${result.translations[0]}</p>
-                </div>
-        `;
+        var resultHTML = 
+            '<div class="translation-success">' +
+                '<div class="translation-header">' +
+                    '<span class="animal-emoji">' + animalEmoji + '</span>' +
+                    '<span class="translation-title">翻译结果</span>' +
+                '</div>' +
+                '<div class="translation-main">' +
+                    '<p class="translation-text">' + result.translations[0] + '</p>' +
+                '</div>';
         
         // 如果有其他可能的含义
         if (result.translations.length > 1) {
-            resultHTML += `
-                <div class="translation-alternatives">
-                    <p class="alternatives-title">💡 其他可能的含义:</p>
-                    <ul class="alternatives-list">
-            `;
-            
-            for (let i = 1; i < result.translations.length; i++) {
-                resultHTML += `<li>${result.translations[i]}</li>`;
-            }
-            
-            resultHTML += `
-                    </ul>
-                </div>
-            `;
+            resultHTML += 
+                '<div class="translation-alternatives">' +
+                    '<p class="alternatives-title">💡 其他可能的含义:</p>' +
+                    '<ul class="alternatives-list">' +
+                        '<li>' + result.translations[1] + '</li>' +
+                    '</ul>' +
+                '</div>';
         }
         
         // 上下文信息
         if (result.context) {
-            resultHTML += `
-                <div class="translation-context">
-                    <span class="context-label">📖 上下文:</span>
-                    <span class="context-value">${result.context}</span>
-                </div>
-            `;
+            resultHTML += 
+                '<div class="translation-context">' +
+                    '<span class="context-label">📖 上下文:</span>' +
+                    '<span class="context-value">' + result.context + '</span>' +
+                '</div>';
         }
         
         // 置信度
-        resultHTML += `
-            <div class="translation-confidence">
-                <span class="confidence-label">置信度:</span>
-                <span class="confidence-value">${confidencePercent}%</span>
-            </div>
-        `;
+        resultHTML += 
+            '<div class="translation-confidence">' +
+                '<span class="confidence-label">置信度:</span>' +
+                '<span class="confidence-value">' + confidencePercent + '%</span>' +
+            '</div>';
         
         // 如果是模糊匹配，添加提示
         if (result.isFuzzyMatch) {
-            resultHTML += `
-                <div class="fuzzy-match-notice">
-                    <p>⚠️ 注意: 这是基于关键词的模糊匹配，可能不完全准确。</p>
-                    <p>建议观察宠物的身体语言来获得更完整的理解。</p>
-                </div>
-            `;
+            resultHTML += 
+                '<div class="fuzzy-match-notice">' +
+                    '<p>⚠️ 注意: 这是基于关键词的模糊匹配，可能不完全准确。</p>' +
+                    '<p>建议观察宠物的身体语言来获得更完整的理解。</p>' +
+                '</div>';
         }
         
-        resultHTML += `</div>`;
+        resultHTML += '</div>';
         
         this.elements.translationResult.innerHTML = resultHTML;
     }
 
     /**
      * 显示错误信息
-     * @param {string} message - 错误消息
      */
     showError(message) {
-        this.elements.translationResult.innerHTML = `
-            <div class="error-message">
-                <p>❌ ${message}</p>
-            </div>
-        `;
+        this.elements.translationResult.innerHTML = 
+            '<div class="error-message">' +
+                '<p>❌ ' + message + '</p>' +
+            '</div>';
     }
 
     /**
      * 加载历史记录
      */
     loadHistory() {
-        const history = this.storageManager.getHistory();
+        var history = this.storageManager.getHistory();
         
         if (history.length === 0) {
             this.elements.historyList.innerHTML = '<p class="placeholder-text">暂无翻译历史</p>';
@@ -393,93 +392,92 @@ class PetTranslatorApp {
         
         this.elements.historyList.innerHTML = '';
         
-        history.forEach(item => {
-            this.appendHistoryItem(item);
-        });
+        for (var i = 0; i < history.length; i++) {
+            this.appendHistoryItem(history[i]);
+        }
     }
 
     /**
      * 追加历史记录项
-     * @param {Object} item - 历史记录项
      */
     appendHistoryItem(item) {
-        const historyElement = this.createHistoryElement(item);
+        var historyElement = this.createHistoryElement(item);
         this.elements.historyList.appendChild(historyElement);
     }
 
     /**
      * 在历史记录开头添加项
-     * @param {Object} item - 历史记录项
      */
     prependHistoryItem(item) {
         // 移除占位符文本
-        const placeholder = this.elements.historyList.querySelector('.placeholder-text');
+        var placeholder = this.elements.historyList.querySelector('.placeholder-text');
         if (placeholder) {
             placeholder.remove();
         }
         
-        const historyElement = this.createHistoryElement(item);
+        var historyElement = this.createHistoryElement(item);
         this.elements.historyList.insertBefore(historyElement, this.elements.historyList.firstChild);
     }
 
     /**
      * 创建历史记录DOM元素
-     * @param {Object} item - 历史记录项
-     * @returns {HTMLElement} 历史记录元素
      */
     createHistoryElement(item) {
-        const animalEmoji = item.mode === 'cat' ? '🐱' : '🐶';
-        const inputTypeText = item.inputType === 'voice' ? '🎤 语音' : '⌨️ 文本';
-        const formattedDate = this.storageManager.formatDate(item.date);
+        var self = this;
+        var animalEmoji = item.mode === 'cat' ? '🐱' : '🐶';
+        var inputTypeText = item.inputType === 'voice' ? '🎤 语音' : '⌨️ 文本';
+        var formattedDate = this.storageManager.formatDate(item.date);
         
         // 提取主要翻译文本
-        let mainTranslation = '';
+        var mainTranslation = '';
         if (item.translationResult && item.translationResult.translations) {
             mainTranslation = item.translationResult.translations[0];
         }
         
-        const historyItem = document.createElement('div');
+        var historyItem = document.createElement('div');
         historyItem.className = 'history-item';
         historyItem.dataset.id = item.id;
         
-        historyItem.innerHTML = `
-            <div class="history-item-header">
-                <div class="history-item-info">
-                    <span class="animal-icon">${animalEmoji}</span>
-                    <span class="history-item-type">${inputTypeText}</span>
-                </div>
-                <span class="history-item-time">${formattedDate}</span>
-            </div>
-            <div class="history-item-input">
-                <span class="input-label">输入:</span>
-                <span class="input-text">"${item.input}"</span>
-            </div>
-            <div class="history-item-output">
-                <span class="output-label">翻译:</span>
-                <span class="output-text">${mainTranslation}</span>
-            </div>
-            <div class="history-item-actions">
-                <button class="retranslate-btn" data-id="${item.id}">重新翻译</button>
-                <button class="delete-btn" data-id="${item.id}">删除</button>
-            </div>
-        `;
+        historyItem.innerHTML = 
+            '<div class="history-item-header">' +
+                '<div class="history-item-info">' +
+                    '<span class="animal-icon">' + animalEmoji + '</span>' +
+                    '<span class="history-item-type">' + inputTypeText + '</span>' +
+                '</div>' +
+                '<span class="history-item-time">' + formattedDate + '</span>' +
+            '</div>' +
+            '<div class="history-item-input">' +
+                '<span class="input-label">输入:</span>' +
+                '<span class="input-text">"' + item.input + '"</span>' +
+            '</div>' +
+            '<div class="history-item-output">' +
+                '<span class="output-label">翻译:</span>' +
+                '<span class="output-text">' + mainTranslation + '</span>' +
+            '</div>' +
+            '<div class="history-item-actions">' +
+                '<button class="retranslate-btn" data-id="' + item.id + '">重新翻译</button>' +
+                '<button class="delete-btn" data-id="' + item.id + '">删除</button>' +
+            '</div>';
         
         // 绑定事件
-        const retranslateBtn = historyItem.querySelector('.retranslate-btn');
-        retranslateBtn.addEventListener('click', () => this.retranslateItem(item.id));
+        var retranslateBtn = historyItem.querySelector('.retranslate-btn');
+        retranslateBtn.addEventListener('click', function() {
+            self.retranslateItem(item.id);
+        });
         
-        const deleteBtn = historyItem.querySelector('.delete-btn');
-        deleteBtn.addEventListener('click', () => this.deleteHistoryItem(item.id));
+        var deleteBtn = historyItem.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', function() {
+            self.deleteHistoryItem(item.id);
+        });
         
         return historyItem;
     }
 
     /**
      * 重新翻译历史记录项
-     * @param {string} id - 历史记录项ID
      */
     retranslateItem(id) {
-        const item = this.storageManager.getHistoryById(id);
+        var item = this.storageManager.getHistoryById(id);
         
         if (item) {
             // 设置对应的模式
@@ -495,20 +493,19 @@ class PetTranslatorApp {
 
     /**
      * 删除历史记录项
-     * @param {string} id - 历史记录项ID
      */
     deleteHistoryItem(id) {
-        const deleted = this.storageManager.deleteHistory(id);
+        var deleted = this.storageManager.deleteHistory(id);
         
         if (deleted) {
             // 从DOM中移除
-            const element = this.elements.historyList.querySelector(`[data-id="${id}"]`);
+            var element = this.elements.historyList.querySelector('[data-id="' + id + '"]');
             if (element) {
                 element.remove();
             }
             
             // 检查是否还有历史记录
-            const remainingItems = this.elements.historyList.querySelectorAll('.history-item');
+            var remainingItems = this.elements.historyList.querySelectorAll('.history-item');
             if (remainingItems.length === 0) {
                 this.elements.historyList.innerHTML = '<p class="placeholder-text">暂无翻译历史</p>';
             }
@@ -520,18 +517,16 @@ class PetTranslatorApp {
      */
     clearHistory() {
         if (confirm('确定要清空所有翻译历史吗？此操作不可撤销。')) {
-            const cleared = this.storageManager.clearHistory();
+            var cleared = this.storageManager.clearHistory();
             
             if (cleared) {
                 this.elements.historyList.innerHTML = '<p class="placeholder-text">暂无翻译历史</p>';
             }
         }
     }
-}
+};
 
 // 当DOM加载完成后初始化应用
-document.addEventListener('DOMContentLoaded', () => {
-    new PetTranslatorApp();
+document.addEventListener('DOMContentLoaded', function() {
+    new PetTranslator.App();
 });
-
-export default PetTranslatorApp;
