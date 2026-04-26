@@ -229,8 +229,8 @@ PetTranslator.App = class {
         
         // 如果有识别结果，进行翻译
         if (result.text && result.text.trim()) {
-            // 显示识别到的文本
-            this.elements.voiceStatus.textContent = '识别到: "' + result.text + '" (置信度: ' + Math.round(result.confidence * 100) + '%)';
+            var simulationNote = result.isSimulation ? ' (模拟模式)' : '';
+            this.elements.voiceStatus.textContent = '识别到: "' + result.text + '" (置信度: ' + Math.round(result.confidence * 100) + '%)' + simulationNote;
             
             // 执行翻译
             this.translate(result.text, 'voice');
