@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫咪和小狗语言翻译器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐱 猫咪和小狗语言翻译器 🐶</h1>
+            <p>理解您宠物的语言，建立更深厚的连接</p>
+        </header>
+
+        <main>
+            <section class="translation-section">
+                <div class="mode-selector">
+                    <button id="cat-mode" class="active">
+                        <span class="icon">🐱</span>
+                        <span>猫咪翻译</span>
+                    </button>
+                    <button id="dog-mode">
+                        <span class="icon">🐶</span>
+                        <span>狗狗翻译</span>
+                    </button>
+                </div>
+
+                <div class="input-section">
+                    <div class="input-type-selector">
+                        <button id="voice-input-btn" class="active">语音录入</button>
+                        <button id="text-input-btn">文本输入</button>
+                    </div>
+
+                    <div id="voice-input-area" class="input-area active">
+                        <div class="voice-container">
+                            <div id="voice-animation" class="voice-animation">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                            <button id="start-voice-btn" class="voice-btn">
+                                <span id="voice-btn-text">开始录音</span>
+                            </button>
+                            <div id="voice-status" class="status-message">点击按钮开始语音录入</div>
+                        </div>
+                    </div>
+
+                    <div id="text-input-area" class="input-area">
+                        <textarea id="text-input" placeholder="请输入您的宠物声音描述（如：喵喵、汪汪、呼噜声等）..."></textarea>
+                        <button id="translate-text-btn">开始翻译</button>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <h3>翻译结果</h3>
+                    <div id="translation-result" class="result-container">
+                        <p class="placeholder-text">翻译结果将显示在这里</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="history-section">
+                <div class="history-header">
+                    <h2>📜 翻译历史</h2>
+                    <button id="clear-history-btn">清空历史</button>
+                </div>
+                <div id="history-list" class="history-list">
+                    <p class="placeholder-text">暂无翻译历史</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 宠物语言翻译器 | 让您更懂您的毛孩子</p>
+        </footer>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
